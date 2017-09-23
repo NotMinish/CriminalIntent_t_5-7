@@ -17,6 +17,9 @@ public class CrimeLab {
         }
         return sCrimeLab;
     }
+    public void delCrime(Crime c) {
+        mCrimes.remove(c);
+        }
 
     private CrimeLab(Context context) {
         mCrimes = new ArrayList<>();

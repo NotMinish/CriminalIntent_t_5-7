@@ -12,6 +12,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
@@ -21,6 +22,8 @@ public class CrimeListFragment extends Fragment {
 
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
 
+    private View mNoCrimesView;
+    private Button mAddCrimeButton;
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
     private boolean mSubtitleVisible;
@@ -44,8 +47,20 @@ public class CrimeListFragment extends Fragment {
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
         }
 
-        updateUI();
+        mNoCrimesView = view.findViewById(R.id.no_crimes_view);
 
+        mAddCrimeButton = (Button)view.findViewById(R.id.add_crime_button);
+        mAddCrimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Crime crime = new Crime();
+                CrimeLab.get(getActivity()).addCrime(crime);
+                Intent intent = CrimePagerActivity
+                        .newIntent(getActivity(), crime.getId());
+                startActivity(intent);
+            }
+        });
+        updateUI();
         return view;
     }
 
@@ -96,13 +111,12 @@ public class CrimeListFragment extends Fragment {
 
     private void updateSubtitle() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
-        int crimeCount = crimeLab.getCrimes().size();
-        String subtitle = getString(R.string.subtitle_format, crimeCount);
-
+        int crimeSize = crimeLab.getCrimes().size();
+        String subtitle = getResources()
+                .getQuantityString(R.plurals.subtitle_plural, crimeSize, crimeSize);
         if (!mSubtitleVisible) {
             subtitle = null;
         }
-
         AppCompatActivity activity = (AppCompatActivity) getActivity();
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
@@ -117,6 +131,10 @@ public class CrimeListFragment extends Fragment {
         } else {
             mAdapter.notifyDataSetChanged();
         }
+
+        boolean showCrimeList = mAdapter.getItemCount() > 0;
+        mCrimeRecyclerView.setVisibility(showCrimeList ? View.VISIBLE : View.INVISIBLE);
+        mNoCrimesView.setVisibility(!showCrimeList ? View.VISIBLE : View.INVISIBLE);
 
         updateSubtitle();
     }
